@@ -4,10 +4,10 @@
 #include <conio.h>
 #include <time.h>
 #include <stdlib.h>
-//123456789
+
 using std::cout;
 using std::endl;
-sad
+
 constexpr int FOODSHOW = 0;
 constexpr int FOODHIDE = 1;
 constexpr int MOVESPEED = 3;
