@@ -79,6 +79,7 @@ int main() {
 		};
 		cout << GetTickCount() - beginTime << endl;
 		cleardevice();
+
 	}
 	EndBatchDraw();
 
