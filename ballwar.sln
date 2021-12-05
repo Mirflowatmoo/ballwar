@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ballwar", "ballwar.vcxproj", "{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}.Debug|x64.ActiveCfg = Debug|x64
+		{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}.Debug|x64.Build.0 = Debug|x64
+		{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}.Debug|x86.ActiveCfg = Debug|Win32
+		{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}.Debug|x86.Build.0 = Debug|Win32
+		{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}.Release|x64.ActiveCfg = Release|x64
+		{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}.Release|x64.Build.0 = Release|x64
+		{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}.Release|x86.ActiveCfg = Release|Win32
+		{D9F9E88E-6AE1-49F3-94DD-9B515E8B6BC1}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {41205E61-15C8-4838-9026-90C38647251A}
+	EndGlobalSection
+EndGlobal
