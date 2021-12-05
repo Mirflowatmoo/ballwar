@@ -73,8 +73,10 @@ int main() {
 		solidcircle(PLAYER_POSX, PLAYER_POSY, radius);
 
 		FlushBatchDraw();
-		Sleep(12);
-		while (GetTickCount() - beginTime < 15);
+
+		while (GetTickCount() - beginTime < 15) {
+			Sleep(1);
+		};
 		cout << GetTickCount() - beginTime << endl;
 		cleardevice();
 	}
