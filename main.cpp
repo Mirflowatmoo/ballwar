@@ -42,6 +42,7 @@ typedef struct tagEnemyBall {
 	int flag;
 } EnemyBall, * PtrEnemyBall;
 
+
 void ShowFood(FoodBall* foodBall, int n);
 
 void MoveFood(FoodBall* foodBall, int n);
