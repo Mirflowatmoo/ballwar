@@ -1,5 +1,5 @@
 //branch master
-//555
+
 #include <iostream>
 #include <Windows.h>
 #include <graphics.h>
@@ -10,6 +10,8 @@
 using std::cout;
 using std::endl;
 
+constexpr int CLOSE_CONSOLE = 0; //关闭控制台 
+constexpr int OPEN_CONSOLE = 1; //打开控制台
 constexpr int FOODSHOW = 0; //食物球显示标记
 constexpr int FOODHIDE = 1; //食物球隐藏标记
 constexpr int ENEMY_ALIVE = 0; //敌球生存标记
@@ -27,6 +29,8 @@ int g_playerRadius = 20; //玩家球体半径
 int g_playerPosxOnMap = 2500, g_playerPosyOnMap = 2500; //玩家球体位于地图的坐标
 int g_moveSpeed = 3; //移动速度
 int g_foodBallNum = 10; //食物球的数量
+float g_zoomCoefficient = 1.0; //缩放系数
+float g_zoomCoefficientLock = 1.0; //缩放阈值锁
 
 typedef struct tagFoodBall {
 	int posx, posy;
@@ -38,10 +42,10 @@ typedef struct tagFoodBall {
 typedef struct tagEnemyBall {
 	int posx, posy;
 	int radius;
+	int speed;
 	COLORREF color;
-	int flag;
+	tagEnemyBall* pNextSonBall;
 } EnemyBall, * PtrEnemyBall;
-
 
 void ShowFood(FoodBall* foodBall, int n);
 
@@ -54,7 +58,7 @@ FoodBall* GameInitFoodBall();
 int main() {
 
 	srand(unsigned(time(NULL)));
-	initgraph(1280, 760, 1);
+	initgraph(SCREEN_WIDTH, SCREEN_HEIGHT, OPEN_CONSOLE);
 	setbkcolor(WHITE);
 
 	FoodBall* pFoodBall = GameInitFoodBall();
@@ -79,14 +83,20 @@ int main() {
 
 		//state changing area
 		MoveFood(pFoodBall, g_foodBallNum);
+		if (g_playerRadius > 30) {
+			g_zoomCoefficientLock = 1.5;
+		}
+
+		if (g_zoomCoefficient <= g_zoomCoefficientLock) {
+			g_zoomCoefficient += 0.01;
+		}
 
 		//collision detection area
 		EatFood(pFoodBall, g_foodBallNum);
 
-
 		ShowFood(pFoodBall, g_foodBallNum);
 		setfillcolor(RED);
-		solidcircle(PLAYER_POSX, PLAYER_POSY, g_playerRadius);
+		solidcircle(PLAYER_POSX, PLAYER_POSY, g_playerRadius / g_zoomCoefficient);
 
 		FlushBatchDraw();
 
@@ -97,6 +107,7 @@ int main() {
 		cleardevice();
 
 	}
+
 	EndBatchDraw();
 
 	delete[] pFoodBall;
@@ -107,7 +118,8 @@ int main() {
 void ShowFood(FoodBall* foodBall, int n) {
 	for (int index = 0; index < n; ++index) {
 		setfillcolor(foodBall[index].color);
-		solidcircle(foodBall[index].posx, foodBall[index].posy, foodBall[index].radius);
+		solidcircle(PLAYER_POSX + (foodBall[index].posx - PLAYER_POSX) / g_zoomCoefficient,
+			PLAYER_POSY + (foodBall[index].posy - PLAYER_POSY) / g_zoomCoefficient, foodBall[index].radius / g_zoomCoefficient);
 	}
 }
 
