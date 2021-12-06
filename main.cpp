@@ -116,8 +116,8 @@ void EatFood(FoodBall* foodBall, int n) {
 				continue;
 			}
 			radius += (fradius >> 2);
-			foodBall[index].posx = rand() % 2560;
-			foodBall[index].posy = rand() % 1520;
+			foodBall[index].posx = rand() % 1280;
+			foodBall[index].posy = rand() % 760;
 			foodBall[index].radius = rand() % 15 + 5;
 		}
 	}
@@ -127,6 +127,7 @@ FoodBall* GameInitFoodBall() {
 
 	FoodBall* pFoodBall = nullptr;
 	pFoodBall = new FoodBall[FOODNUM];
+
 
 	for (int index = 0; index < FOODNUM; ++index) {
 		pFoodBall[index] = { rand() % 1280, rand() % 760, rand() % 15 + 5, RGB(rand() % 255, rand() % 255, rand() % 255), FOODSHOW };
