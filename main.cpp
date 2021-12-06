@@ -128,7 +128,6 @@ FoodBall* GameInitFoodBall() {
 	FoodBall* pFoodBall = nullptr;
 	pFoodBall = new FoodBall[FOODNUM];
 
-
 	for (int index = 0; index < FOODNUM; ++index) {
 		pFoodBall[index] = { rand() % 1280, rand() % 760, rand() % 15 + 5, RGB(rand() % 255, rand() % 255, rand() % 255), FOODSHOW };
 	}
