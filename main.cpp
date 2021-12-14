@@ -7,105 +7,126 @@
 #include <time.h>
 #include <stdlib.h>
 
+#define CLOSE_CONSOLE 0 //å…³é—­æŽ§åˆ¶å° 
+#define OPEN_CONSOLE 1 //æ‰“å¼€æŽ§åˆ¶å°
+#define FOODSHOW 0 //é£Ÿç‰©çƒæ˜¾ç¤ºæ ‡è®°
+#define FOODHIDE 1 //é£Ÿç‰©çƒéšè—æ ‡è®°
+#define ENEMY_ALIVE 0 //æ•Œçƒç”Ÿå­˜æ ‡è®°
+#define ENEMY_DEAD 1 //æ•Œçƒæ­»äº¡æ ‡è®°
+#define SCREEN_WIDTH 1280 //çª—å£å®½åº¦
+#define SCREEN_HEIGHT 760 //çª—å£é«˜åº¦
+#define MAP_WIDTH 5000 //åœ°å›¾å®½åº¦
+#define MAP_HEIGHT 5000 //åœ°å›¾é«˜åº¦
+#define PLAYER_POSX 640 //çŽ©å®¶åœ¨çª—å£å®¢æˆ·åŒºçš„æ¨ªåæ ‡ï¼ˆé»˜è®¤ä¸ºä¸­é—´ï¼‰
+#define PLAYER_POSY 380 //çŽ©å®¶åœ¨çª—å£å®¢æˆ·åŒºçš„çºµåæ ‡ï¼ˆé»˜è®¤ä¸ºä¸­é—´ï¼‰
+#define ENEMY_BALL_NUM 10 //æ•Œçƒçš„æ•°é‡
+#define FRAMES_60 15 //1000 / 60 = 16, 16 - 1 = 15
+
 using std::cout;
 using std::endl;
 
-constexpr int CLOSE_CONSOLE = 0; //¹Ø±Õ¿ØÖÆÌ¨ 
-constexpr int OPEN_CONSOLE = 1; //´ò¿ª¿ØÖÆÌ¨
-constexpr int FOODSHOW = 0; //Ê³ÎïÇòÏÔÊ¾±ê¼Ç
-constexpr int FOODHIDE = 1; //Ê³ÎïÇòÒþ²Ø±ê¼Ç
-constexpr int ENEMY_ALIVE = 0; //µÐÇòÉú´æ±ê¼Ç
-constexpr int ENEMY_DEAD = 1; //µÐÇòËÀÍö±ê¼Ç
-constexpr int SCREEN_WIDTH = 1280; //´°¿Ú¿í¶È
-constexpr int SCREEN_HEIGHT = 760; //´°¿Ú¸ß¶È
-constexpr int MAP_WIDTH = 5000; //µØÍ¼¿í¶È
-constexpr int MAP_HEIGHT = 5000; //µØÍ¼¸ß¶È
-constexpr int PLAYER_POSX = 640; //Íæ¼ÒÔÚ´°¿Ú¿Í»§ÇøµÄºá×ø±ê£¨Ä¬ÈÏÎªÖÐ¼ä£©
-constexpr int PLAYER_POSY = 380; //Íæ¼ÒÔÚ´°¿Ú¿Í»§ÇøµÄ×Ý×ø±ê£¨Ä¬ÈÏÎªÖÐ¼ä£©
-constexpr int ENEMY_BALL_NUM = 10; //µÐÇòµÄÊýÁ¿
-
-int g_posxdif = 0, g_posydif = 0; //È«¾Ö¶ÔÏó×ø±êÆ«ÒÆÁ¿
-int g_playerRadius = 20; //Íæ¼ÒÇòÌå°ë¾¶
-int g_playerPosxOnMap = 2500, g_playerPosyOnMap = 2500; //Íæ¼ÒÇòÌåÎ»ÓÚµØÍ¼µÄ×ø±ê
-int g_moveSpeed = 3; //ÒÆ¶¯ËÙ¶È
-int g_foodBallNum = 10; //Ê³ÎïÇòµÄÊýÁ¿
-float g_zoomCoefficient = 1.0; //Ëõ·ÅÏµÊý
-float g_zoomCoefficientLock = 1.0; //Ëõ·ÅãÐÖµËø
+int g_foodBallNum = 200; //é£Ÿç‰©çƒçš„æ•°é‡
+float g_zoomCoefficient = 1.0f; //ç¼©æ”¾ç³»æ•°
+float g_zoomCoefficientLock = 1.0f; //ç¼©æ”¾é˜ˆå€¼é”
+float g_moveSpeed = 3.0f; //ç§»åŠ¨é€Ÿåº¦
+float g_playerRadius = 0.0f; //çŽ©å®¶çƒä½“åŠå¾„
+float g_playerWeight = 20.0f; //çŽ©å®¶çƒä½“é‡é‡
+float g_posxdif = 0.0f, g_posydif = 0.0f; //å…¨å±€å¯¹è±¡åæ ‡åç§»é‡
+float g_playerPosxOnMap = MAP_WIDTH / 2, g_playerPosyOnMap = MAP_HEIGHT / 2; //çŽ©å®¶çƒä½“ä½äºŽåœ°å›¾çš„åæ ‡
 
 typedef struct tagFoodBall {
-	int posx, posy;
-	int radius;
+	float posx, posy;
+	float radius;
+	float weight;
 	COLORREF color;
 	int flag;
 } FoodBall, * PtrFoodBall;
 
 typedef struct tagEnemyBall {
-	int posx, posy;
-	int radius;
-	int speed;
+	float posx, posy;
+	float radius;
+	float weight;
+	float speed;
 	COLORREF color;
 	tagEnemyBall* pNextSonBall;
 } EnemyBall, * PtrEnemyBall;
 
+//æ¸¸æˆåˆå§‹åŒ–
+FoodBall* GameInitFoodBall();
+
+void GameInitPlayerBall();
+
+//è¾“å…¥åé¦ˆ
+void InputResponse();
+
+//ç¼©æ”¾çŠ¶æ€æ›´æ–°
+void UpdateZoom();
+
+//çŽ©å®¶çŠ¶æ€æ›´æ–°
+void UpdatePlayerState();
+
+//ç»˜åˆ¶é£Ÿç‰©çƒ
 void ShowFood(FoodBall* foodBall, int n);
 
+//ç§»åŠ¨é£Ÿç‰©çƒ
 void MoveFood(FoodBall* foodBall, int n);
 
+//ç¢°æ’žæ£€æµ‹ï¼Œåžå™¬åˆ¤å®š
 void EatFood(FoodBall* foodBall, int n);
 
-FoodBall* GameInitFoodBall();
+//ä½“é‡è½¬æ¢é€Ÿåº¦
+float WeightToSpeed(float weight);
+
+//ä½“é‡è½¬æ¢åŠå¾„
+float WeightToRadius(float weight);
+
+//åŠå¾„è½¬æ¢ä½“é‡
+float RadiusToWeight(float radius);
+
 
 int main() {
 
 	srand(unsigned(time(NULL)));
-	initgraph(SCREEN_WIDTH, SCREEN_HEIGHT, OPEN_CONSOLE);
+	initgraph(SCREEN_WIDTH, SCREEN_HEIGHT, CLOSE_CONSOLE);
 	setbkcolor(WHITE);
+	setbkmode(TRANSPARENT);
 
 	FoodBall* pFoodBall = GameInitFoodBall();
+	GameInitPlayerBall();
 
 	BeginBatchDraw();
 	while (1) {
+
+		//çŠ¶æ€èŽ·å–
 		DWORD beginTime = GetTickCount();
-		//input return area
-		g_posxdif = g_posydif = 0;
-		if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-			g_posxdif = g_moveSpeed;
-		}
-		if (GetAsyncKeyState(VK_UP) & 0x8000) {
-			g_posydif = g_moveSpeed;
-		}
-		if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-			g_posxdif = -g_moveSpeed;
-		}
-		if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
-			g_posydif = -g_moveSpeed;
-		}
 
-		//state changing area
+		//è¾“å…¥åé¦ˆ
+		InputResponse();
+
+		//çŠ¶æ€æ›´æ–°
+		UpdatePlayerState();
 		MoveFood(pFoodBall, g_foodBallNum);
-		if (g_playerRadius > 30) {
-			g_zoomCoefficientLock = 1.5;
-		}
+		UpdateZoom();
 
-		if (g_zoomCoefficient <= g_zoomCoefficientLock) {
-			g_zoomCoefficient += 0.01;
-		}
-
-		//collision detection area
+		//ç¢°æ’žæ£€æµ‹ä¸Žäº¤äº’
 		EatFood(pFoodBall, g_foodBallNum);
 
+		//ç»˜åˆ¶
 		ShowFood(pFoodBall, g_foodBallNum);
 		setfillcolor(RED);
 		solidcircle(PLAYER_POSX, PLAYER_POSY, g_playerRadius / g_zoomCoefficient);
+		char str[80];
+		sprintf_s(str, "ä½“é‡: %f g  åŠå¾„: %f pixel é€Ÿåº¦: %f pixel/frame", g_playerWeight, g_playerRadius, g_moveSpeed);
+		settextcolor(RED);
+		outtextxy(30, 30, str);
 
 		FlushBatchDraw();
 
-		while (GetTickCount() - beginTime < 15) {
+		while (GetTickCount() - beginTime < FRAMES_60) {
 			Sleep(1);
 		};
-		cout << GetTickCount() - beginTime << endl;
+		//cout << GetTickCount() - beginTime << endl;
 		cleardevice();
-
 	}
 
 	EndBatchDraw();
@@ -115,11 +136,83 @@ int main() {
 	return 0;
 }
 
+
+FoodBall* GameInitFoodBall() {
+
+	FoodBall* pFoodBall = nullptr;
+	pFoodBall = new FoodBall[g_foodBallNum];
+
+	for (int index = 0; index < g_foodBallNum; ++index) {
+		int tempRadius = rand() % 15 + 5;
+		pFoodBall[index] = { 
+			float(rand() % 1280), 
+			float(rand() % 760), 
+			(float)tempRadius,
+			RadiusToWeight((float)tempRadius),
+			RGB(rand() % 255, rand() % 255, rand() % 255), 
+			FOODSHOW 
+		};
+	}
+
+	return pFoodBall;
+}
+
+void GameInitPlayerBall() {
+	g_playerRadius = 20.0f;
+	g_playerWeight = RadiusToWeight(20.0f);
+	g_moveSpeed = WeightToSpeed(g_playerWeight);
+}
+
+void InputResponse() {
+	g_posxdif = g_posydif = 0;
+
+	if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
+		g_playerWeight += 5000;
+	}
+
+	if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
+		g_posxdif = g_moveSpeed;
+	}
+	if (GetAsyncKeyState(VK_UP) & 0x8000) {
+		g_posydif = g_moveSpeed;
+	}
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
+		g_posxdif = -g_moveSpeed;
+	}
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
+		g_posydif = -g_moveSpeed;
+	}
+}
+
+void UpdateZoom() {
+	if (g_playerRadius > 50.0f && g_zoomCoefficientLock < 1.01f) {
+		g_zoomCoefficientLock = 1.5f;
+		g_moveSpeed /= g_zoomCoefficientLock;
+	}
+	else if (g_playerRadius > 150.0f && g_zoomCoefficientLock < 1.51f) {
+		g_zoomCoefficientLock = 2.0f;
+		g_moveSpeed = g_moveSpeed * 1.5 / g_zoomCoefficientLock;
+	}
+	else if (g_playerRadius > 500.0f && g_zoomCoefficientLock < 2.01f) {
+		g_zoomCoefficientLock = 2.5f;
+		g_moveSpeed = g_moveSpeed * 1.8f / g_zoomCoefficientLock;
+	}
+	if (g_zoomCoefficient < g_zoomCoefficientLock) {
+		g_zoomCoefficient += 0.01f;
+	}
+}
+
+void UpdatePlayerState() {
+	g_playerRadius = WeightToRadius(g_playerWeight);
+	g_moveSpeed = WeightToSpeed(g_playerWeight) / g_zoomCoefficient;
+}
+
 void ShowFood(FoodBall* foodBall, int n) {
 	for (int index = 0; index < n; ++index) {
 		setfillcolor(foodBall[index].color);
-		solidcircle(PLAYER_POSX + (foodBall[index].posx - PLAYER_POSX) / g_zoomCoefficient,
-			PLAYER_POSY + (foodBall[index].posy - PLAYER_POSY) / g_zoomCoefficient, foodBall[index].radius / g_zoomCoefficient);
+		solidcircle(PLAYER_POSX + int((foodBall[index].posx - PLAYER_POSX) / g_zoomCoefficient),
+			PLAYER_POSY + int((foodBall[index].posy - PLAYER_POSY) / g_zoomCoefficient), 
+			int(foodBall[index].radius / g_zoomCoefficient));
 	}
 }
 
@@ -131,34 +224,37 @@ void MoveFood(FoodBall* foodBall, int n) {
 }
 
 void EatFood(FoodBall* foodBall, int n) {
-	int judgeValue = g_playerRadius >> 1;
+	int judgeValue = int(g_playerRadius) >> 1;
 
 	for (int index = 0; index < n; ++index) {
-		int fposx = foodBall[index].posx;
-		int fposy = foodBall[index].posy;
-		int fradius = foodBall[index].radius;
-
+		int fposx = (int)foodBall[index].posx;
+		int fposy = (int)foodBall[index].posy;
+		int fradius = (int)foodBall[index].radius;
+		float fweight = foodBall[index].weight;
 
 		if (abs(PLAYER_POSX - fposx) <= judgeValue && abs(PLAYER_POSY - fposy) <= judgeValue) {
 			if (g_playerRadius < fradius) {
 				continue;
 			}
-			g_playerRadius += (fradius >> 2);
-			foodBall[index].posx = rand() % 2560;
-			foodBall[index].posy = rand() % 1520;
-			foodBall[index].radius = rand() % 15 + 5;
+			g_playerWeight += fweight;
+			foodBall[index].posx = float(rand() % 2560);
+			foodBall[index].posy = float(rand() % 1520);
+			foodBall[index].radius = float(rand() % 15 + 5);
 		}
 	}
 }
 
-FoodBall* GameInitFoodBall() {
+float WeightToSpeed(float weight) {
+	weight = sqrt(weight);
+	weight = sqrt(weight);
+	weight = sqrt(weight);
+	return 25 / weight;
+}
 
-	FoodBall* pFoodBall = nullptr;
-	pFoodBall = new FoodBall[g_foodBallNum];
+float WeightToRadius(float weight) {
+	return sqrt(weight / 3.14159f);
+}
 
-	for (int index = 0; index < g_foodBallNum; ++index) {
-		pFoodBall[index] = { rand() % 1280, rand() % 760, rand() % 15 + 5, RGB(rand() % 255, rand() % 255, rand() % 255), FOODSHOW };
-	}
-
-	return pFoodBall;
+float RadiusToWeight(float radius) {
+	return radius * radius * 3.14159f;
 }
