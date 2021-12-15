@@ -65,6 +65,9 @@ void UpdateZoom();
 //玩家状态更新
 void UpdatePlayerState();
 
+//绘制地图
+void ShowMap();
+
 //绘制食物球
 void ShowFood(FoodBall* foodBall, int n);
 
@@ -83,12 +86,11 @@ float WeightToRadius(float weight);
 //半径转换体重
 float RadiusToWeight(float radius);
 
-
 int main() {
 
 	srand(unsigned(time(NULL)));
 	initgraph(SCREEN_WIDTH, SCREEN_HEIGHT, CLOSE_CONSOLE);
-	setbkcolor(WHITE);
+	setbkcolor(RGB(50, 50, 50));
 	setbkmode(TRANSPARENT);
 
 	FoodBall* pFoodBall = GameInitFoodBall();
@@ -99,7 +101,7 @@ int main() {
 
 		//状态获取
 		DWORD beginTime = GetTickCount();
-
+		
 		//输入反馈
 		InputResponse();
 
@@ -113,12 +115,13 @@ int main() {
 
 		//绘制
 		ShowFood(pFoodBall, g_foodBallNum);
-		setfillcolor(RED);
+		setfillcolor(RGB(150, 150, rand() % 255));
 		solidcircle(PLAYER_POSX, PLAYER_POSY, g_playerRadius / g_zoomCoefficient);
 		char str[80];
 		sprintf_s(str, "体重: %f g  半径: %f pixel 速度: %f pixel/frame", g_playerWeight, g_playerRadius, g_moveSpeed);
-		settextcolor(RED);
+		settextcolor(WHITE);
 		outtextxy(30, 30, str);
+		ShowMap();
 
 		FlushBatchDraw();
 
@@ -145,8 +148,8 @@ FoodBall* GameInitFoodBall() {
 	for (int index = 0; index < g_foodBallNum; ++index) {
 		int tempRadius = rand() % 15 + 5;
 		pFoodBall[index] = { 
-			float(rand() % 1280), 
-			float(rand() % 760), 
+			float(rand() % 2560 - 1280), 
+			float(rand() % 1520 - 760), 
 			(float)tempRadius,
 			RadiusToWeight((float)tempRadius),
 			RGB(rand() % 255, rand() % 255, rand() % 255), 
@@ -185,27 +188,55 @@ void InputResponse() {
 }
 
 void UpdateZoom() {
-	if (g_playerRadius > 50.0f && g_zoomCoefficientLock < 1.01f) {
-		g_zoomCoefficientLock = 1.5f;
-		g_moveSpeed /= g_zoomCoefficientLock;
-	}
-	else if (g_playerRadius > 150.0f && g_zoomCoefficientLock < 1.51f) {
-		g_zoomCoefficientLock = 2.0f;
-		g_moveSpeed = g_moveSpeed * 1.5 / g_zoomCoefficientLock;
-	}
-	else if (g_playerRadius > 500.0f && g_zoomCoefficientLock < 2.01f) {
-		g_zoomCoefficientLock = 2.5f;
-		g_moveSpeed = g_moveSpeed * 1.8f / g_zoomCoefficientLock;
-	}
+
 	if (g_zoomCoefficient < g_zoomCoefficientLock) {
 		g_zoomCoefficient += 0.01f;
 	}
+
+	if (g_playerRadius > 60.0f && g_zoomCoefficientLock < 1.01f) {
+		g_zoomCoefficientLock = 1.8f;
+		g_moveSpeed /= g_zoomCoefficientLock;
+	}
+	else if (g_playerRadius > 120.0f && g_zoomCoefficientLock < 1.81f) {
+		g_zoomCoefficientLock = 2.2f;
+		g_moveSpeed = g_moveSpeed * 1.8 / g_zoomCoefficientLock;
+	}
+	else if (g_playerRadius > 250.0f && g_zoomCoefficientLock < 2.21f) {
+		g_zoomCoefficientLock = 2.8f;
+		g_moveSpeed = g_moveSpeed * 2.2 / g_zoomCoefficientLock;
+	}
+	else if (g_playerRadius > 500.0f && g_zoomCoefficientLock < 2.81f) {
+		g_zoomCoefficientLock = 5.0f;
+		g_moveSpeed = g_moveSpeed * 2.8f / g_zoomCoefficientLock;
+	}
+	else if (g_playerRadius > 800.0f && g_zoomCoefficientLock < 5.01f) {
+		g_zoomCoefficientLock = 7.5f;
+		g_moveSpeed = g_moveSpeed * 5.0f / g_zoomCoefficientLock;
+	}
+	
 }
 
 void UpdatePlayerState() {
+	g_playerPosxOnMap += g_posxdif;
+	g_playerPosyOnMap -= g_posydif;
 	g_playerRadius = WeightToRadius(g_playerWeight);
 	g_moveSpeed = WeightToSpeed(g_playerWeight) / g_zoomCoefficient;
 }
+
+void ShowMap()
+{
+	int b = 20;
+	setfillcolor(RGB(50, 255, 0));
+	solidrectangle(SCREEN_WIDTH - MAP_WIDTH / b, 0, MAP_WIDTH, MAP_HEIGHT / b);
+	setfillcolor(RGB(50, 0, 225));
+	solidrectangle(SCREEN_WIDTH - g_playerPosxOnMap / b - SCREEN_WIDTH * g_zoomCoefficient / b / 2, (g_playerPosyOnMap / b - SCREEN_HEIGHT * g_zoomCoefficient / b / 2),
+		SCREEN_WIDTH - g_playerPosxOnMap / b + SCREEN_WIDTH * g_zoomCoefficient / b / 2, (g_playerPosyOnMap / b + SCREEN_HEIGHT * g_zoomCoefficient / b / 2));
+	setfillcolor(RED);
+
+	solidcircle(SCREEN_WIDTH - g_playerPosxOnMap / b, g_playerPosyOnMap / b, 5);
+
+}
+
 
 void ShowFood(FoodBall* foodBall, int n) {
 	for (int index = 0; index < n; ++index) {
@@ -224,18 +255,21 @@ void MoveFood(FoodBall* foodBall, int n) {
 }
 
 void EatFood(FoodBall* foodBall, int n) {
-	int judgeValue = int(g_playerRadius) >> 1;
 
 	for (int index = 0; index < n; ++index) {
-		int fposx = (int)foodBall[index].posx;
-		int fposy = (int)foodBall[index].posy;
-		int fradius = (int)foodBall[index].radius;
-		float fweight = foodBall[index].weight;
 
-		if (abs(PLAYER_POSX - fposx) <= judgeValue && abs(PLAYER_POSY - fposy) <= judgeValue) {
-			if (g_playerRadius < fradius) {
-				continue;
-			}
+		if (g_playerRadius < foodBall[index].radius) {
+			continue;
+		}
+
+		float fposx = foodBall[index].posx;
+		float fposy = foodBall[index].posy;
+		float fradius = foodBall[index].radius;
+		float fweight = foodBall[index].weight;
+		float radiusDif = abs(g_playerRadius - fradius);
+		float posDif = sqrt(pow(abs(fposx - PLAYER_POSX), 2) + pow(abs(fposy - PLAYER_POSY), 2));
+
+		if (posDif < radiusDif) {
 			g_playerWeight += fweight;
 			foodBall[index].posx = float(rand() % 2560);
 			foodBall[index].posy = float(rand() % 1520);
@@ -258,3 +292,4 @@ float WeightToRadius(float weight) {
 float RadiusToWeight(float radius) {
 	return radius * radius * 3.14159f;
 }
+
